@@ -90,3 +90,31 @@ Função **options**
 
 O método vai retornar o index da lista informada de opções.
 
+**Exemplo completo:**
+```python
+from Menu_seleção import Menu_seleção as ms
+
+cabeçalho = "B.R.A.I.N.S"
+
+seleção = ["negrito","vermelho","verde"]
+padrão = ['normal','branco','normal']
+
+menu = ms(cabeçalho=cabeçalho,
+          limite_opçoes=5,
+          texto_seleção=seleção,
+          texto_padrao=padrão
+          )
+
+opções = ["Logar","Me Cadastrar","Sair","opção 4","opção 5","opção 6","opção 7","opção 8"]
+
+select = menu.options(descrição="Bem vindo, o que deseja fazer?",opções=opções)
+
+if select == 0:
+    print('Função logar()')
+elif select == 1: 
+    print('Função Cadastrar()')
+elif select == 2:
+    print('Função Exit()')
+else:
+    print("Opção selecionada: " + opções[select])
+```

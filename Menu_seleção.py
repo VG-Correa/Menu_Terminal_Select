@@ -1,59 +1,68 @@
 import sys
-import termios
-import tty
 import os
 
 
 def cls():
-    os.system('clear')
+    if platform.system() == "Linux":
+        os.system('clear')
+    else:
+        os.system('cls')
+        
+import platform
+
+if platform.system() == "Linux":
+    import tty
+    import termios
+elif platform.system() == "Windows":
+    import msvcrt
 
 def getch():
-    # Salva as configurações atuais do terminal
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
     print("\033[?25l", end="", flush=True)
 
-    try:
-        # Configura o terminal para não exibir a entrada
-        tty.setraw(sys.stdin.fileno())
-
-        # Captura a tecla pressionada
-        chave = sys.stdin.read(1)
-
-    except:
+    if platform.system() == "Linux":
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         print("\033[?25h", end="", flush=True)
-        
-    finally:
-        # Restaura as configurações originais do terminal
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+        return ch
+    elif platform.system() == "Windows":
         print("\033[?25h", end="", flush=True)
-    
-    return chave
+        return msvcrt.getch()
 
 def Key():
     
     while True:
         key = '' 
-        key = key + getch()
+        key = key + str(getch())
         
-        if "\x1b" in key:
-
-            for i in range(0,2):
-                key = key + getch()
+                
+        if "\x1b" in key or "b'\\x00'" in key or "b'\\xe0'" in key:
+            # input('botão: ' + str([key]))
+            
+            for i in range(0,1):
+                key = key + str(getch())
+            # input("Botão: " + str([key]))
     
-        if key == '\x1b[A':
+
+        if key == '\x1b[A' or key == "b'\\x00'b'H'" or key == "b'\\xe0'b'H'":
             return "cima"
         
-        if key == '\x1b[B':
+        
+        elif key == '\x1b[B' or key == "b'\\x00'b'P'" or key == "b'\\xe0'b'P'":
             return "baixo"
         
-        if key == '\x1b[D':
+        elif key == '\x1b[D' or key == "b'\\x00'b'K'" or key == "b'\\xe0'b'K'":
             return "esquerda"
             
-        if key == '\x1b[C':
+        elif key == '\x1b[C' or key == "b'\\x00'b'M'" or key == "b'\\xe0'b'M'":
             return "direita"
         
-        if key == '\r':
+        elif key == '\r' or "b'\\r'" in key:
             return "enter"
         
         return key
@@ -136,7 +145,6 @@ class Menu_seleção:
                         print(self.texto_padrao + str(opção) + self.texto_normal)   
             
             key = Key()
-            cls()
             if key == 'cima':
                 index_selecionado -= 1
             elif key == 'baixo':

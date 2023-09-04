@@ -15,24 +15,43 @@ if platform.system() == "Linux":
     import termios
 elif platform.system() == "Windows":
     import msvcrt
+    import platform
+    import ctypes
+    
 
-def getch():
-    print("\033[?25l", end="", flush=True)
-
+def hide_cursor():
     if platform.system() == "Linux":
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
+        sys.stdout.write("\033[?25l")
+        sys.stdout.flush()
+    elif platform.system() == "Windows":
+        sys.stdout.write("\033[?25l")
+        sys.stdout.flush()
+
+def show_cursor():
+    if platform.system() == "Linux":
+        sys.stdout.write("\033[?25h")
+        sys.stdout.flush()
+    elif platform.system() == "Windows":
+        sys.stdout.write("\033[?25h")
+        sys.stdout.flush()
+        
+def getch():
+    if platform.system() == "Linux":
         try:
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            # hide_cursor()
             tty.setraw(sys.stdin.fileno())
             ch = sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        print("\033[?25h", end="", flush=True)
-
+            # show_cursor()
         return ch
     elif platform.system() == "Windows":
-        print("\033[?25h", end="", flush=True)
-        return msvcrt.getch()
+        # hide_cursor()
+        tecla = msvcrt.getch()
+        # show_cursor()
+        return tecla
 
 def Key():
     
@@ -112,7 +131,7 @@ class Menu_seleção:
         self.texto_padrao = '\033[' + self.estilo_texto[texto_padrao[0]] + ';' + self.cor_texto[texto_padrao[1]] + ';' + self.cor_fundo[texto_padrao[2]] + 'm'
 
     def options(self,cabeçalho='',descrição='',opções=[],limite_opçoes=0):
-
+        hide_cursor()
         
         cabeçalho = self.cabeçalho if cabeçalho == '' else cabeçalho
         descrição = descrição
@@ -150,6 +169,7 @@ class Menu_seleção:
             elif key == 'baixo':
                 index_selecionado += 1 
             elif key == 'enter':
+                show_cursor()
                 return index_selecionado
             
             if index_selecionado < 0:
@@ -171,6 +191,5 @@ class Menu_seleção:
                 maior_sessao += 1
                 menor_sessao += 1
             
-
 # menu = Menu_seleção(cabeçalho='cabeçalho',texto_seleção = ['negrito','vermelho','verde'])
 # print(menu.options(descrição='Essa é a descrição',opções=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]))
